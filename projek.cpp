@@ -23,7 +23,7 @@ class LibraryItem {
         string getId() const {
             return id;
         }
-        string getTittle() const {
+        string getTitle() const {
             return title;
         }
         bool getIsBorrowed() const{
@@ -84,9 +84,9 @@ class Journal : public LibraryItem{
         int volume;
     public:
         Journal(string id, string title, int volume) : LibraryItem(id, title), volume(volume){}
-        void display() const override(){
+        void display() const override{
             LibraryItem::display();
-            cout << " Volume: " << volume << " [Jurnal]\n";
+            cout << " | Volume: " << volume << " [Jurnal]\n";
         }
 };
 
@@ -99,7 +99,7 @@ class Member {
         Member(string id, string name) : memberId(id), name(name){}
         virtual ~Member(){}
         string getId() const {
-            retun memberId;
+            return memberId;
         }
         string getName() const{
             return name;
@@ -109,10 +109,11 @@ class Member {
         }
 };
 
-class Student :: public Member{
+class Student : public Member{
     private:
         string major;
     public:
+        Student (string id, string name, string major) : Member(id, name), major (major){}
         void display() const override{
             Member::display();
             cout << " | Jurusan: " << major << " [Mahasiswa]\n";
@@ -123,7 +124,7 @@ class Lecturer : public Member {
     private:
         string department;
     public:
-        Lecturer(int string id, string title, string department) : Member(id, title), department(department){}
+        Lecturer(string id, string title, string department) : Member(id, title), department(department){}
         void display() const override{
             Member::display();
             cout << " | Department: " << department << " [Dosen]\n";
