@@ -18,9 +18,7 @@ string rp (double v) { //ABSTRACT
 // barang perpustakaan 
 
 class LibraryItem {
-    /*ENKAPSULASI
-    cegah variabel dapat diubah dari main
-    */
+    //ENKAPSULASI cegah variabel dapat diubah dari main
     private:
         string id;
         string title;
@@ -28,7 +26,8 @@ class LibraryItem {
         bool isBorrowed;
     
     public:
-        LibraryItem(string id, string title, int year) : id(id), title(title), year(year), isBorrowed(false) {
+        LibraryItem(string id, string title, int year) 
+        : id(id), title(title), year(year), isBorrowed(false) {
             if (id.empty() || title.empty())
                 throw invalid_argument("ID dan judul tidak boleh kosong.");
             if (year < 1000 || year > 2026)
@@ -36,21 +35,15 @@ class LibraryItem {
         }        
         virtual ~LibraryItem() {}
 
-        // enkapsulasi getter setter
-        string getId() const {
-            return id;
-        }
-        string getTitle() const {
-            return title;
-        }
-        int getYear() const{
-            return year;
-        }
-         bool getIsBorrowed() const {
-            return isBorrowed;
-        }
+        // getter: hanya membaca
+        string getId() const { return id; }
+        string getTitle() const { return title; }
+        int getYear() const{ return year; }
+        bool getIsBorrowed() const { return isBorrowed; }
+
+        // satu-satunya cara mengubah status pinjam
         bool borrowItem() {
-            if (isBorrowed) return false;   // aturan: tidak boleh dipinjam dua kali
+            if (isBorrowed) return false; // aturan: tidak boleh dipinjam dua kali
             isBorrowed = true;
             return true;
         }
@@ -151,16 +144,19 @@ class Member { //abstract dengan batas pinjam
         string name;
         vector<string> borrowedIds;
     public:
-        Member(string id, string memberName) : memberId(id), name(memberName) {
+        Member(string id, string memberName) 
+        : memberId(id), name(memberName) {
             if (memberId.empty() || name.empty())
                 throw invalid_argument("ID dan nama anggota tidak boleh kosong.");
         }
         virtual ~Member() {}
 
+        // getter
         string getId() const { return memberId; }
         string getName() const { return name; }
         int loanCount() const { return static_cast<int>(borrowedIds.size()); }
 
+        // kelas sendiri yang menjaga jumlah pinjaman
         bool canBorrow() const { return loanCount() < getMaxLoans(); }
         bool addLoan(const string& itemId) {
             if (!canBorrow()) return false;
@@ -291,8 +287,19 @@ public:
     }
 
     void addItem(LibraryItem* item) { items.push_back(item); }
-    void addMember(Member* member) { members.push_back(member); }
+    void addMember(Member* member) {
+        if (member == nullptr) {
+            throw invalid_argument("Data anggota tidak valid.");
+        }
 
+        if (findMember(member->getId()) != nullptr) {
+            string id = member->getId();
+            delete member;
+            throw invalid_argument("ID anggota " + id + " sudah digunakan.");
+        }
+
+        members.push_back(member);
+    }
     // [OOP: ABSTRAKSI]
     // Fungsi ini adalah wujud nyata abstraksi. 
     // Pengguna sistem (dari main.cpp) HANYA perlu memanggil fungsi ini untuk meminjam buku.
@@ -470,14 +477,14 @@ int main() {
     myLib.addMember(new Student("S01", "Andi", "Informatika"));
     myLib.addMember(new Lecturer("L01", "Dr. Ratna", "Ilmu Komputer"));
 
-    cout << "=== SELAMAT DATANG DI SISTEM PERPUSTAKAAN ===\n";
+//    cout << "=== SELAMAT DATANG DI SISTEM PERPUSTAKAAN ===\n";
     
     myLib.displayFineComparison(2);
     // Menampilkan dengan memanfaatkan Polimorfisme
     myLib.displayAllItems();
     myLib.displayAllMembers();
 
-    cout << "\n--- PROSES PEMINJAMAN ---\n";
+//    cout << "\n--- PROSES PEMINJAMAN ---\n";
     
     // Meminjam buku menggunakan Abstraksi
     myLib.borrowItem("B01", "S01", 1); 
@@ -489,11 +496,11 @@ int main() {
     myLib.returnItem("B01", 20);
     myLib.borrowItem("D01", "L01", 1);
     myLib.returnItem("D01", 6);
+//    displayFineComparison(2);
+//    cout << "\n--- STATUS KOLEKSI SETELAH PEMINJAMAN ---\n";
+//    myLib.displayAllItems();
 
-    cout << "\n--- STATUS KOLEKSI SETELAH PEMINJAMAN ---\n";
-    myLib.displayAllItems();
-
-    while (true) {
+/*    while (true) {
         cout << "\n=======================================\n";
         cout << "  SISTEM MANAJEMEN PERPUSTAKAAN (OOP)\n";
         cout << "  Hari simulasi: ke-" << today << "\n";
@@ -508,9 +515,10 @@ int main() {
         cout << " 8. Cari Koleksi                (Static Polymorphism)\n";
         cout << " 9. Bandingkan Denda Semua Tipe (Dynamic Polymorphism)\n";
         cout << "10. Majukan Hari Simulasi\n";
+        cout << "11. Tambah Anggota Baru\n";
         cout << " 0. Keluar\n";
 
-        int choice = readInt("Pilih menu (0-10): ");
+        int choice = readInt("Pilih menu (0-11): ");
         if (choice == 0) { cout << "Selesai.\n"; break; }
 
         try {
@@ -566,6 +574,38 @@ int main() {
                 int d = readInt("Majukan berapa hari? ");
                 if (d > 0) { today += d; cout << "-> Sekarang hari ke-" << today << ".\n"; }
                 else cout << "-> DITOLAK: Harus lebih dari 0.\n";
+            }  else if (choice == 11) {
+                cout << "\n=== PENDAFTARAN ANGGOTA BARU ===\n";
+                cout << "1. Mahasiswa\n";
+                cout << "2. Dosen\n";
+
+                int role = readInt("Pilih jenis anggota (1-2): ");
+
+                if (role != 1 && role != 2) {
+                    cout << "-> DITOLAK: Jenis anggota tidak valid.\n";
+                } else {
+                    string id = readLine("ID anggota: ");
+                    string name = readLine("Nama anggota: ");
+
+                    if (role == 1) {
+                        string major = readLine("Program studi: ");
+
+                        myLib.addMember(
+                            new Student(id, name, major)
+                        );
+
+                        cout << "-> BERHASIL: Mahasiswa ditambahkan.\n";
+
+                    } else {
+                        string department = readLine("Departemen: ");
+
+                        myLib.addMember(
+                            new Lecturer(id, name, department)
+                        );
+
+                        cout << "-> BERHASIL: Dosen ditambahkan.\n";
+                    }
+                }
             } else {
                 cout << "Pilihan tidak valid.\n";
             }
@@ -574,6 +614,6 @@ int main() {
             cout << "-> DITOLAK: " << e.what() << "\n";
         }
     }
-
+*/
     return 0;
 } 
