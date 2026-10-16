@@ -202,7 +202,7 @@ class Lecturer : public Member {
     private:
         string department;
     public:
-        Lecturer(string id, string title, string department) : Member(id, title), department(department){}
+        Lecturer(string id, string name, string department) : Member(id, name), department(department){}
         
         int getMaxLoans() const override { return 10; }
         double getFineDiscount() const override { return 0.5; }
@@ -286,7 +286,19 @@ public:
         for (auto member : members) delete member;
     }
 
-    void addItem(LibraryItem* item) { items.push_back(item); }
+    void addItem(LibraryItem* item) {
+        if (item == nullptr) {
+            throw invalid_argument("Data koleksi tidak valid.");
+        }
+
+        if (findItem(item->getId()) != nullptr) {
+            string id = item->getId();
+            delete item;
+            throw invalid_argument("ID koleksi " + id + " sudah digunakan.");
+        }
+
+        items.push_back(item);
+    }
     void addMember(Member* member) {
         if (member == nullptr) {
             throw invalid_argument("Data anggota tidak valid.");
@@ -473,34 +485,19 @@ int main() {
     myLib.addItem(new DVD("D01", "Tutorial OOP", 2022, "Pak Joko"));
     myLib.addItem(new Journal("J01", "AI Research", 2024, 5));
 
-    // Menambahkan member
     myLib.addMember(new Student("S01", "Andi", "Informatika"));
     myLib.addMember(new Lecturer("L01", "Dr. Ratna", "Ilmu Komputer"));
 
-//    cout << "=== SELAMAT DATANG DI SISTEM PERPUSTAKAAN ===\n";
-    
-    myLib.displayFineComparison(2);
-    // Menampilkan dengan memanfaatkan Polimorfisme
-    myLib.displayAllItems();
-    myLib.displayAllMembers();
 
-//    cout << "\n--- PROSES PEMINJAMAN ---\n";
-    
-    // Meminjam buku menggunakan Abstraksi
     myLib.borrowItem("B01", "S01", 1); 
     
-    // Sistem Enkapsulasi akan menolak peminjaman karena buku sedang dipinjam
     myLib.borrowItem("B01", "L01", 1); 
     
-    //polymorphism
     myLib.returnItem("B01", 20);
     myLib.borrowItem("D01", "L01", 1);
     myLib.returnItem("D01", 6);
-//    displayFineComparison(2);
-//    cout << "\n--- STATUS KOLEKSI SETELAH PEMINJAMAN ---\n";
-//    myLib.displayAllItems();
 
-/*    while (true) {
+    while (true) {
         cout << "\n=======================================\n";
         cout << "  SISTEM MANAJEMEN PERPUSTAKAAN (OOP)\n";
         cout << "  Hari simulasi: ke-" << today << "\n";
@@ -614,6 +611,6 @@ int main() {
             cout << "-> DITOLAK: " << e.what() << "\n";
         }
     }
-*/
+
     return 0;
 } 
